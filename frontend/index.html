@@ -3,13 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title></title>
+    <title>Udg</title>
     <link href="css/style.css" rel="stylesheet" />
   </head>
   <body>
     <div class="login-card">
-      <!-- Pendiente agregar el action del form tag cuando el backend este disponible -->
-      <form action="" method="post">
+      <form id="loginForm">
         <h1>Iniciar sesión</h1>
         <img
           src="assets/images/udgPlusLogInLogo.jpg"
@@ -21,7 +20,7 @@
           type="text"
           name="user"
           id="user"
-          placeholder="Usuario"
+          placeholder="Correo electrónico"
           required
         />
 
@@ -35,7 +34,61 @@
         />
 
         <button type="submit">Iniciar sesión</button>
+        <p id="errorMsg"></p>
       </form>
     </div>
+    <script>
+      const API_URL = "http://127.0.0.1:8000"; // cámbialo cuando despliegues
+
+      const form = document.getElementById("loginForm");
+      const errorMsg = document.getElementById("errorMsg");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorMsg.style.display = "none";
+
+        const email = document.getElementById("user").value;
+        const password = document.getElementById("password").value;
+
+        // OAuth2PasswordRequestForm exige form-urlencoded con 'username' y 'password'
+        const body = new URLSearchParams();
+        body.append("username", email);
+        body.append("password", password);
+
+        try {
+          const res = await fetch(`${API_URL}/token`, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: body.toString(),
+          });
+
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || "Credenciales incorrectas");
+          }
+
+          const data = await res.json();
+          // data = { access_token: "...", token_type: "bearer" }
+          localStorage.setItem("token", data.access_token);
+
+          // Opcional: obtener perfil para saber si es admin o no
+          const perfilRes = await fetch(`${API_URL}/perfil`, {
+            headers: { Authorization: `Bearer ${data.access_token}` },
+          });
+          const perfil = await perfilRes.json();
+          localStorage.setItem("departamento", perfil.departamento_tag);
+
+          // Redirigir según rol
+          if (perfil.departamento_tag === "admin") {
+            window.location.href = "adminDashboard.html";
+          } else {
+            window.location.href = "dashboard.html";
+          }
+        } catch (err) {
+          errorMsg.textContent = err.message;
+          errorMsg.style.display = "block";
+        }
+      });
+    </script>
   </body>
 </html>
