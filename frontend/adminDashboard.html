@@ -8,5 +8,18 @@
   </head>
   <body>
     <h1>Admin dashboard</h1>
+    <button id="logoutBtn">Cerrar sesión</button>
+    <script>
+      // Proteger la página: si no hay token, regresa al login
+      if (!localStorage.getItem("token")) {
+        window.location.href = "index.html";
+      }
+
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("departamento");
+        window.location.href = "index.html";
+      });
+    </script>
   </body>
 </html>
