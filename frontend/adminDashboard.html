@@ -1,24 +1,159 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title></title>
-    <link href="css/style.css" rel="stylesheet" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" type="" href="css/style.css" />
   </head>
-  <body>
-    <h1>Admin dashboard</h1>
-    <button id="logoutBtn">Cerrar sesión</button>
+  <body class="page-admin">
+    <header class="admin-header">
+      <h1>Admin dashboard</h1>
+      <div class="user-box">
+        <span id="userName"></span>
+        <button id="logout">Cerrar sesión</button>
+      </div>
+    </header>
+    <hr />
+    <section class="card">
+      <h2>Crear / consultar formularios</h2>
+      <input id="fNombre" placeholder="Nombre" />
+      <input id="fLink" placeholder="Link (https://...)" />
+      <select id="fDepto" class="depto"></select>
+      <button id="fCrear">Crear</button>
+      <button id="fConsultar">Consultar existentes</button>
+
+      <h2>Editar formulario</h2>
+      <input id="eId" placeholder="ID" />
+      <input id="eNombre" placeholder="Nuevo nombre (opcional)" />
+      <input id="eLink" placeholder="Nuevo link (opcional)" />
+      <select id="eDepto" class="depto"></select>
+      <button id="eGuardar">Guardar</button>
+
+      <h2>Eliminar formulario</h2>
+      <input id="xId" placeholder="ID" />
+      <button id="xBorrar">Eliminar</button>
+    </section>
+
+    <dialog id="modal">
+      <div class="modal-box">
+        <button id="modalClose" class="modal-close">&times;</button>
+        <h2>Formularios existentes</h2>
+        <div id="modalBody"></div>
+      </div>
+    </dialog>
+
     <script>
-      // Proteger la página: si no hay token, regresa al login
-      if (!localStorage.getItem("token")) {
-        window.location.href = "index.html";
+      const API = "http://127.0.0.1:8000"; // cámbialo al desplegar
+      const token = localStorage.getItem("token");
+      if (!token) location.href = "index.html";
+
+      const $ = (id) => document.getElementById(id);
+      const val = (id) => $(id).value.trim();
+      const esc = (s) =>
+        String(s).replace(
+          /[&<>"]/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+        );
+
+      // Helper de fetch: token + errores
+      async function api(path, method = "GET", body) {
+        const res = await fetch(API + path, {
+          method,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            ...(body && { "Content-Type": "application/json" }),
+          },
+          body: body && JSON.stringify(body),
+        });
+        if (res.status === 204) return null;
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.detail || "Error");
+        return data;
       }
 
-      document.getElementById("logoutBtn").addEventListener("click", () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("departamento");
-        window.location.href = "index.html";
+      // Asigna onclick y atrapa errores en un solo lugar
+      const on = (id, fn) =>
+        ($(id).onclick = async () => {
+          try {
+            await fn();
+          } catch (e) {
+            alert("Error: " + e.message);
+          }
+        });
+
+      on("logout", () => {
+        localStorage.clear();
+        location.href = "index.html";
+      });
+      $("modalClose").onclick = () => $("modal").close();
+      $("modal").onclick = (e) => e.target === $("modal") && $("modal").close();
+
+      // Muestra quién inició sesión (hoy el email; cambia a me.nombre cuando /perfil lo exponga)
+      api("/perfil")
+        .then((me) => ($("userName").textContent = me.usuario))
+        .catch(() => {});
+
+      async function loadDeptos() {
+        const ds = await fetch(API + "/departamentos").then((r) => r.json());
+        const opts = ds
+          .map(
+            (d) =>
+              `<option value="${d.id}">#${d.id} · ${d.nombre} (${d.codigo})</option>`,
+          )
+          .join("");
+        document
+          .querySelectorAll(".depto")
+          .forEach((s) => (s.innerHTML = opts));
+        $("eDepto").insertAdjacentHTML(
+          "afterbegin",
+          `<option value="">— no cambiar —</option>`,
+        );
+      }
+      loadDeptos();
+
+      on("fCrear", async () => {
+        const f = await api("/formularios", "POST", {
+          nombre: val("fNombre"),
+          link: val("fLink"),
+          id_departamento: +val("fDepto"),
+        });
+        alert(
+          `Éxito: formulario #${f.id} "${f.nombre}" añadido (${f.nombre_departamento}).`,
+        );
+      });
+
+      on("fConsultar", async () => {
+        const fs = await api("/formularios/mis-formularios");
+        $("modalBody").innerHTML = fs.length
+          ? fs
+              .map(
+                (f) =>
+                  `<div class="modal-item">ID: ${esc(f.id)}<br>Nombre: ${esc(f.nombre)}<br>Link: <a href="${esc(/^https?:\/\//i.test(f.link) ? f.link : "#")}" target="_blank" rel="noopener">${esc(f.link)}</a><br>Depto: ${esc(f.nombre_departamento)}</div>`,
+              )
+              .join("")
+          : "No hay formularios.";
+        $("modal").showModal();
+      });
+
+      on("eGuardar", async () => {
+        const id = val("eId");
+        if (!id) return alert("Falta el ID.");
+        const c = {};
+        if (val("eNombre")) c.nombre = val("eNombre");
+        if (val("eLink")) c.link = val("eLink");
+        if ($("eDepto").value) c.id_departamento = +$("eDepto").value;
+        const f = await api(`/formularios/${id}`, "PUT", c);
+        alert(
+          `Editado: #${f.id} "${f.nombre}" → ${f.link} (${f.nombre_departamento}).`,
+        );
+      });
+
+      on("xBorrar", async () => {
+        const id = val("xId");
+        if (!id || !confirm(`¿Eliminar #${id}?`)) return;
+        await api(`/formularios/${id}`, "DELETE");
+        alert(`Formulario #${id} eliminado.`);
       });
     </script>
   </body>
