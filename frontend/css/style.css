@@ -1,7 +1,5 @@
 /* ─── Globals (compartidos entre páginas) ─────────────────── */
 
-/* aquí irán cosas como .btn, .site-header, etc. cuando las necesites */
-
 /* ─── page-index ──────────────────────────────────────────── */
 
 .page-index {
@@ -96,17 +94,18 @@
   align-items: center;
   margin-bottom: 1rem;
 }
-.page-admin .admin-header #userName {
+.page-admin .admin-header .userName {
   font-weight: bold;
   padding: 1rem;
 }
 .page-admin .card {
+  display: grid;
   background: #fff;
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   padding: 1.5rem;
   margin-bottom: 1rem;
-  max-width: 480px;
+  max-width: 16%;
 }
 .page-admin .card h2 {
   font-size: 15px;
