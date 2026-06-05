@@ -38,7 +38,7 @@ form.addEventListener("submit", async (e) => {
     location.href =
       perfil.departamento_tag === "admin"
         ? "adminDashboard.html"
-        : "dashboard.html";
+        : "userDashboard.html";
   } catch (err) {
     errorMsg.textContent = err.message;
     errorMsg.style.display = "block";
