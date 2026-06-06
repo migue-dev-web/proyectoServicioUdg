@@ -2,7 +2,7 @@ import { api, $, esc, on, requireAuth } from "./core.js";
 
 requireAuth();
 
-on("logout", () => {
+on("logOut", () => {
   localStorage.clear();
   location.href = "index.html";
 });
