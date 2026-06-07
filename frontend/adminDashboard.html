@@ -35,10 +35,26 @@
         <button id="fConsultar">Consultar existentes</button>
       </section>
 
+      <section class="card">
+        <h2>Registrar usuario</h2>
+        <input id="uNombre" placeholder="Nombre" />
+        <input id="uEmail" type="email" placeholder="Correo electronico" />
+        <input id="uPass" type="password" placeholder="Contraseña" />
+        <select id="uDepto" class="depto-user"></select>
+        <button id="uCrear">Registrar usuario</button>
+
+        <h2>Eliminar usuario</h2>
+        <input id="uxId" placeholder="ID" />
+        <button id="uxBorrar">Eliminar</button>
+
+        <h2>Consultar usuarios existentes en la base de datos</h2>
+        <button id="uConsultar">Consultar usuarios existentes</button>
+      </section>
+
       <dialog id="modal">
         <div class="modal-box">
           <button id="modalClose" class="modal-close">&times;</button>
-          <h2>Formularios existentes</h2>
+          <h2 id="modalTitle"></h2>
           <div id="modalBody"></div>
         </div>
       </dialog>

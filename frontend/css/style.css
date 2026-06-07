@@ -98,12 +98,18 @@
   font-weight: bold;
   padding: 1rem;
 }
+
+.page-admin main {
+  display: flex;
+}
+
 .page-admin .card {
   display: grid;
   background: #fff;
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   padding: 1.5rem;
+  margin-right: 1rem;
   max-width: 16%;
 }
 .page-admin .card h2 {

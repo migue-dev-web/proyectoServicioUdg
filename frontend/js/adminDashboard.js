@@ -16,18 +16,33 @@ api("/perfil")
 
 async function loadDeptos() {
   const ds = await fetch(API + "/departamentos").then((r) => r.json());
-  const opts = ds
-    .filter((d) => d.codigo !== "admin") // oculta el depto de privilegios admin
+
+  // Selects de FORMULARIOS (.depto): ocultamos el depto de privilegios admin
+  const optsForm = ds
+    .filter((d) => d.codigo !== "admin")
     .map(
       (d) =>
-        `<option value="${d.id}">#${d.id} · ${d.nombre} (${d.codigo})</option>`,
+        `<option value="${d.id}">#${d.id} · ${esc(d.nombre)} (${esc(d.codigo)})</option>`,
     )
     .join("");
-  document.querySelectorAll(".depto").forEach((s) => (s.innerHTML = opts));
+  document.querySelectorAll(".depto").forEach((s) => (s.innerHTML = optsForm));
   $("eDepto").insertAdjacentHTML(
     "afterbegin",
     `<option value="">— no cambiar —</option>`,
   );
+
+  // Select de USUARIOS (.depto-user): SÍ incluimos "admin", porque el
+  // departamento es lo que da los permisos; asignar a alguien al depto admin
+  // es la forma de crear otro administrador.
+  const optsUser = ds
+    .map(
+      (d) =>
+        `<option value="${d.id}">#${d.id} · ${esc(d.nombre)} (${esc(d.codigo)})</option>`,
+    )
+    .join("");
+  document
+    .querySelectorAll(".depto-user")
+    .forEach((s) => (s.innerHTML = optsUser));
 }
 loadDeptos();
 
@@ -44,6 +59,7 @@ on("fCrear", async () => {
 
 on("fConsultar", async () => {
   const fs = await api("/formularios/mis-formularios");
+  $("modalTitle").textContent = "Formularios existentes";
   $("modalBody").innerHTML = fs.length
     ? fs
         .map(
@@ -73,4 +89,41 @@ on("xBorrar", async () => {
   if (!id || !confirm(`¿Eliminar #${id}?`)) return;
   await api(`/formularios/${id}`, "DELETE");
   alert(`Formulario #${id} eliminado.`);
+});
+
+// ─── USUARIOS ──────────────────────────────────────────────
+
+on("uCrear", async () => {
+  if (!val("uNombre") || !val("uEmail") || !val("uPass"))
+    return alert("Nombre, correo y contraseña son obligatorios.");
+  const u = await api("/usuarios/registrar", "POST", {
+    nombre: val("uNombre"),
+    email: val("uEmail"),
+    password: val("uPass"),
+    id_departamento: +val("uDepto"),
+  });
+  alert(
+    `Éxito: usuario #${u.id} "${u.nombre}" registrado (${u.departamento}).`,
+  );
+});
+
+on("uxBorrar", async () => {
+  const id = val("uxId");
+  if (!id || !confirm(`¿Eliminar usuario #${id}?`)) return;
+  await api(`/usuarios/${id}`, "DELETE");
+  alert(`Usuario #${id} eliminado.`);
+});
+
+on("uConsultar", async () => {
+  const us = await api("/usuarios");
+  $("modalTitle").textContent = "Usuarios existentes";
+  $("modalBody").innerHTML = us.length
+    ? us
+        .map(
+          (u) =>
+            `<div class="modal-item">ID: ${esc(u.id)}<br>Nombre: ${esc(u.nombre)}<br>Correo: ${esc(u.email)}<br>Depto: ${esc(u.departamento)}</div>`,
+        )
+        .join("")
+    : "No hay usuarios.";
+  $("modal").showModal();
 });
