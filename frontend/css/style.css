@@ -178,3 +178,83 @@
   color: #1e5fa5;
   word-break: break-all;
 }
+
+/* ─── Respuestas por departamento (modal ancho + tablas) ─── */
+.page-admin dialog.modal-wide {
+  max-width: 920px;
+}
+.page-admin .resp-form {
+  font-size: 14px;
+  margin: 1.25rem 0 0.25rem;
+  color: #1e5fa5;
+}
+.page-admin .resp-count {
+  color: #888;
+  font-weight: 400;
+}
+.page-admin .resp-empty {
+  font-size: 13px;
+  color: #888;
+  margin: 0.25rem 0 1rem;
+}
+.page-admin .resp-scroll {
+  width: max-content;
+  margin-bottom: 1rem;
+  border: 1px solid #e3e5e9;
+  border-radius: 4px;
+}
+.page-admin .resp-table {
+  border-collapse: collapse;
+  font-size: 12px;
+  width: auto;
+}
+.page-admin .resp-table th,
+.page-admin .resp-table td {
+  border: 1px solid #e3e5e9;
+  padding: 6px 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+.page-admin .resp-table thead th {
+  background: #eef2fb;
+  position: sticky;
+  top: 0;
+}
+
+/* ─── Panel de respuestas inline (carta que crece con el contenido) ─── */
+.page-admin .resp-panel {
+  display: block;
+  flex: 0 0 auto;
+  max-width: none;
+  width: max-content;
+  align-self: flex-start;
+}
+.page-admin .resp-controls {
+  width: max-content;
+}
+/* Solo el selector de respuestas: ancho de la opcion mas larga */
+.page-admin #rDepto {
+  width: max-content;
+  max-width: none;
+}
+.page-admin .resp-title {
+  font-size: 16px;
+  margin: 1.25rem 0 0.5rem;
+  color: #333;
+}
+.page-admin .resp-placeholder {
+  color: #9aa0a6;
+  font-size: 13px;
+}
+
+/* ─── Reordenamiento: respuestas arriba, las demas cartas abajo ─── */
+.page-admin main {
+  flex-wrap: wrap;
+}
+.page-admin .row-break {
+  flex-basis: 100%;
+  height: 0;
+}
+.page-admin .resp-panel {
+  margin-bottom: 1rem;
+}

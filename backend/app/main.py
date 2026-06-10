@@ -9,6 +9,7 @@ from datetime import datetime
 from . import models, schemas, auth, database 
 from .database import engine, get_db
 from .auth import get_current_user
+from .sheets_csv import leer_respuestas
 
 app = FastAPI()
 
@@ -225,6 +226,7 @@ def crear_formulario(
         "id": nuevo_form.id,
         "nombre": nuevo_form.nombre,
         "link": nuevo_form.link,
+        "sheet_id": nuevo_form.sheet_id,
         "id_departamento": nuevo_form.id_departamento,
         "nombre_departamento": depto.nombre
     }
@@ -271,6 +273,7 @@ def leer_mis_formularios(
             "id": f.id,
             "nombre": f.nombre,
             "link": f.link,
+            "sheet_id": f.sheet_id,
             "id_departamento": f.id_departamento,
             "nombre_departamento": f.depto_rel.nombre
         } for f in formularios
@@ -322,6 +325,7 @@ def actualizar_formulario(
         "id": db_form.id,
         "nombre": db_form.nombre,
         "link": db_form.link,
+        "sheet_id": db_form.sheet_id,
         "id_departamento": db_form.id_departamento,
         "nombre_departamento": db_form.depto_rel.nombre
     }
@@ -395,3 +399,44 @@ def ver_historial_cambios(
 
     
     return db.query(models.AuditoriaDB).order_by(models.AuditoriaDB.fecha.desc()).offset(skip).limit(limit).all()
+
+
+# --- RESPUESTAS POR DEPARTAMENTO (lee el CSV publico de cada hoja) ---
+
+@app.get("/departamentos/{depto_id}/respuestas")
+def respuestas_por_departamento(
+    depto_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(auth.get_current_user),
+):
+    if current_user["departamento"] != "admin":
+        raise HTTPException(status_code=403, detail="No autorizado")
+
+    depto = db.query(models.DepartamentoDB).filter(
+        models.DepartamentoDB.id == depto_id
+    ).first()
+    if not depto:
+        raise HTTPException(status_code=404, detail="Departamento no encontrado")
+
+    forms = db.query(models.FormularioDB).filter(
+        models.FormularioDB.id_departamento == depto_id
+    ).all()
+
+    salida = []
+    for f in forms:
+        item = {
+            "id": f.id, "nombre": f.nombre, "tiene_sheet": False,
+            "headers": [], "rows": [], "total": 0, "error": None,
+        }
+        if not f.sheet_id:
+            item["error"] = "Sin hoja de respuestas vinculada"
+            salida.append(item)
+            continue
+        try:
+            headers, rows = leer_respuestas(f.sheet_id)
+            item.update(tiene_sheet=True, headers=headers, rows=rows, total=len(rows))
+        except Exception as e:
+            item["error"] = f"No se pudo leer la hoja: {e}"
+        salida.append(item)
+
+    return {"departamento": depto.nombre, "formularios": salida}

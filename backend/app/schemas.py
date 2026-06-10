@@ -46,6 +46,7 @@ class FormBase(BaseModel):
     nombre: str
     link: str
     id_departamento: int
+    sheet_id: Optional[str] = None
 
 class FormCreate(FormBase):
     pass
@@ -62,6 +63,7 @@ class FormUpdate(BaseModel):
     nombre: Optional[str] = None
     link: Optional[str] = None
     id_departamento: Optional[int] = None
+    sheet_id: Optional[str] = None
 
 class ScheduleCreate(BaseModel):
     id_formulario: int

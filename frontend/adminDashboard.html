@@ -15,16 +15,34 @@
       </div>
     </header>
     <main>
+      <section class="card resp-panel">
+        <h2>Respuestas por departamento</h2>
+        <div class="resp-controls">
+          <select id="rDepto" class="depto"></select>
+          <button id="rVer">Ver respuestas</button>
+        </div>
+        <div id="respOut" class="resp-placeholder">
+          Selecciona un departamento y da "Ver respuestas".
+        </div>
+      </section>
+
+      <div class="row-break"></div>
+
       <section class="card">
         <h2>Insertar formularios a la base de datos</h2>
-        <input id="fNombre" placeholder="Nombre" />
-        <input id="fLink" placeholder="Link (https://...)" />
+        <input id="fNombre" placeholder="Nombre del formulario" />
+        <input id="fLink" placeholder="Link del formulario" />
+        <input id="fSheet" placeholder="Link de Google Sheets relacionado" />
         <select id="fDepto" class="depto"></select>
         <button id="fCrear">Insertar formulario</button>
         <h2>Editar formulario</h2>
         <input id="eId" placeholder="ID" />
-        <input id="eNombre" placeholder="Nuevo nombre" />
-        <input id="eLink" placeholder="Nuevo link" />
+        <input id="eNombre" placeholder="Nuevo nombre del formulario" />
+        <input id="eLink" placeholder="Nuevo link del formulario" />
+        <input
+          id="eSheet"
+          placeholder="Nuevo link de Google Sheets relacionado"
+        />
         <select id="eDepto" class="depto"></select>
         <button id="eGuardar">Guardar</button>
 

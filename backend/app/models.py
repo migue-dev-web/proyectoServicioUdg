@@ -31,6 +31,7 @@ class FormularioDB(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, index=True)
     link = Column(String)
+    sheet_id = Column(String, nullable=True)  # ID del spreadsheet de respuestas
     # Relación con el departamento
     id_departamento = Column(Integer, ForeignKey("departamentos.id"))
     

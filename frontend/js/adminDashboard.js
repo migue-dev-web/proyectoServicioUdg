@@ -2,6 +2,12 @@ import { API, api, $, val, esc, on, requireAuth } from "./core.js";
 
 requireAuth();
 
+// Acepta el link completo de Google Sheets o el ID pelón; devuelve solo el ID.
+const sheetId = (s) => {
+  const m = String(s).match(/\/d\/([a-zA-Z0-9-_]+)/);
+  return m ? m[1] : s.trim();
+};
+
 on("logOut", () => {
   localStorage.clear();
   location.href = "index.html";
@@ -50,6 +56,7 @@ on("fCrear", async () => {
   const f = await api("/formularios", "POST", {
     nombre: val("fNombre"),
     link: val("fLink"),
+    sheet_id: sheetId(val("fSheet")) || null,
     id_departamento: +val("fDepto"),
   });
   alert(
@@ -59,12 +66,13 @@ on("fCrear", async () => {
 
 on("fConsultar", async () => {
   const fs = await api("/formularios/mis-formularios");
+  $("modal").classList.remove("modal-wide");
   $("modalTitle").textContent = "Formularios existentes";
   $("modalBody").innerHTML = fs.length
     ? fs
         .map(
           (f) =>
-            `<div class="modal-item">ID: ${esc(f.id)}<br>Nombre: ${esc(f.nombre)}<br>Link: <a href="${esc(/^https?:\/\//i.test(f.link) ? f.link : "#")}" target="_blank" rel="noopener">${esc(f.link)}</a><br>Depto: ${esc(f.nombre_departamento)}</div>`,
+            `<div class="modal-item">ID: ${esc(f.id)}<br>Nombre: ${esc(f.nombre)}<br>Link: <a href="${esc(/^https?:\/\//i.test(f.link) ? f.link : "#")}" target="_blank" rel="noopener">${esc(f.link)}</a><br>Sheet ID: ${esc(f.sheet_id || "—")}<br>Depto: ${esc(f.nombre_departamento)}</div>`,
         )
         .join("")
     : "No hay formularios.";
@@ -77,6 +85,7 @@ on("eGuardar", async () => {
   const c = {};
   if (val("eNombre")) c.nombre = val("eNombre");
   if (val("eLink")) c.link = val("eLink");
+  if (val("eSheet")) c.sheet_id = sheetId(val("eSheet"));
   if ($("eDepto").value) c.id_departamento = +$("eDepto").value;
   const f = await api(`/formularios/${id}`, "PUT", c);
   alert(
@@ -90,6 +99,42 @@ on("xBorrar", async () => {
   await api(`/formularios/${id}`, "DELETE");
   alert(`Formulario #${id} eliminado.`);
 });
+
+// ─── RESPUESTAS POR DEPARTAMENTO ───────────────────────────
+
+on("rVer", async () => {
+  const id = $("rDepto").value;
+  if (!id) return alert("Selecciona un departamento.");
+  const out = $("respOut");
+  out.classList.remove("resp-placeholder");
+  out.innerHTML = `<p class="resp-empty">Cargando…</p>`;
+  const data = await api(`/departamentos/${id}/respuestas`);
+  out.innerHTML =
+    `<h2 class="resp-title">Respuestas · ${esc(data.departamento)}</h2>` +
+    (data.formularios.length
+      ? data.formularios.map(renderForm).join("")
+      : `<p class="resp-empty">Este departamento no tiene formularios.</p>`);
+});
+
+// Cada formulario se renderiza por separado: su título + su propia tabla.
+function renderForm(f) {
+  const head = `<h3 class="resp-form">${esc(f.nombre)} <span class="resp-count">(${f.total})</span></h3>`;
+  if (!f.tiene_sheet)
+    return (
+      head +
+      `<p class="resp-empty">${esc(f.error || "Sin hoja de respuestas vinculada.")}</p>`
+    );
+  if (!f.rows.length)
+    return head + `<p class="resp-empty">Sin respuestas todavía.</p>`;
+  const thead = `<tr>${f.headers.map((h) => `<th>${esc(h)}</th>`).join("")}</tr>`;
+  const tbody = f.rows
+    .map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join("")}</tr>`)
+    .join("");
+  return (
+    head +
+    `<div class="resp-scroll"><table class="resp-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`
+  );
+}
 
 // ─── USUARIOS ──────────────────────────────────────────────
 
@@ -116,6 +161,7 @@ on("uxBorrar", async () => {
 
 on("uConsultar", async () => {
   const us = await api("/usuarios");
+  $("modal").classList.remove("modal-wide");
   $("modalTitle").textContent = "Usuarios existentes";
   $("modalBody").innerHTML = us.length
     ? us
