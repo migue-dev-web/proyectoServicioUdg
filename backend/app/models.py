@@ -31,7 +31,7 @@ class FormularioDB(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, index=True)
     link = Column(String)
-    sheet_id = Column(String, nullable=True)  # ID del spreadsheet de respuestas
+    sheet_id = Column(String, nullable=True)
     # Relación con el departamento
     id_departamento = Column(Integer, ForeignKey("departamentos.id"))
     
@@ -46,6 +46,8 @@ class FormScheduleDB(Base):
     fecha_inicio = Column(DateTime, nullable=False)
     fecha_fin = Column(DateTime, nullable=False)
 
+    aviso_apertura_enviado = Column(Boolean, default=False)
+    aviso_cierre_enviado = Column(Boolean, default=False)
     # Relación para saber a qué formulario pertenece
     formulario = relationship("FormularioDB")
 
@@ -59,3 +61,13 @@ class AuditoriaDB(Base):
     registro_id = Column(Integer)                 
     detalles = Column(Text, nullable=True)       
     fecha = Column(DateTime, default=datetime.utcnow)
+
+class NotificationLogDB(Base):
+    __tablename__ = "notifications_log"
+
+    id = Column(Integer, primary_key=True, index=True)
+    id_formulario = Column(Integer, ForeignKey("formularios.id", ondelete="CASCADE"))
+    usuario_destino = Column(String, nullable=False) # Correo del usuario que lo recibió
+    tipo_notificacion = Column(String, nullable=False) # APERTURA, RECORDATORIO_CIERRE, EVENTO_ENVIO
+    fecha_envio = Column(DateTime, default=datetime.utcnow)
+    estado = Column(String, default="EXITOSO")

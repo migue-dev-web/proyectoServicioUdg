@@ -9,16 +9,10 @@ from datetime import datetime
 from . import models, schemas, auth, database 
 from .database import engine, get_db
 from .auth import get_current_user
+from app.scheduler import scheduler
 from .sheets_csv import leer_respuestas
 
 app = FastAPI()
-
-# Crear tablas al iniciar
-models.Base.metadata.create_all(bind=engine)
-
-
-
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], # En producción cambia esto por tu dominio real
@@ -26,6 +20,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Crear tablas al iniciar
+models.Base.metadata.create_all(bind=engine)
+
+
+
+
+
 
 # --- 1. AUTENTICACIÓN (LOGIN) ---
 
@@ -401,7 +403,11 @@ def ver_historial_cambios(
     return db.query(models.AuditoriaDB).order_by(models.AuditoriaDB.fecha.desc()).offset(skip).limit(limit).all()
 
 
-# --- RESPUESTAS POR DEPARTAMENTO (lee el CSV publico de cada hoja) ---
+@app.on_event("startup")
+def iniciar_scheduler():
+    if not scheduler.running:
+        scheduler.start()
+        print("Scheduler periódico iniciado con éxito.")
 
 @app.get("/departamentos/{depto_id}/respuestas")
 def respuestas_por_departamento(
