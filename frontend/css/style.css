@@ -184,9 +184,50 @@
   max-width: 920px;
 }
 .page-admin .resp-form {
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
   margin: 1.25rem 0 0.25rem;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  font-size: 14px;
+  font-weight: 600;
   color: #1e5fa5;
+  text-align: left;
+  cursor: pointer;
+}
+.page-admin .resp-chevron {
+  display: inline-block;
+  font-size: 11px;
+  color: #888;
+  transition: transform 0.15s ease;
+}
+.page-admin .resp-block.is-open .resp-chevron {
+  transform: rotate(90deg);
+}
+.page-admin .resp-body {
+  display: none;
+}
+.page-admin .resp-block.is-open .resp-body {
+  display: block;
+}
+.page-admin .resp-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: auto;
+  margin: 0;
+  font-size: 13px;
+  color: #555;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.page-admin .resp-toggle input {
+  width: auto;
+  margin: 0;
 }
 .page-admin .resp-count {
   color: #888;
@@ -232,8 +273,9 @@
 .page-admin .resp-controls {
   width: max-content;
 }
-/* Solo el selector de respuestas: ancho de la opcion mas larga */
-.page-admin #rDepto {
+/* Solo los selectores de respuestas: ancho de la opcion mas larga */
+.page-admin #rDepto,
+.page-admin #ruUsuario {
   width: max-content;
   max-width: none;
 }
