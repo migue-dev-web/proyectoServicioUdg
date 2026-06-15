@@ -6,6 +6,8 @@ export { API };
 // --- DOM ---
 export const $ = (id) => document.getElementById(id);
 export const val = (id) => $(id).value.trim();
+// Vacía los campos indicados por id (p. ej. tras crear un registro con éxito).
+export const clear = (...ids) => ids.forEach((id) => ($(id).value = ""));
 export const esc = (s) =>
   String(s).replace(
     /[&<>"]/g,
@@ -56,6 +58,56 @@ export async function api(path, method = "GET", body) {
   return data;
 }
 
+// --- Feedback en pantalla (reemplazan a alert/confirm del navegador) ---
+
+// "Toast" flotante que aparece y se va solo. tipo: "ok" (verde) | "error" (rojo).
+// Crea su contenedor la primera vez, así no hace falta tocar el HTML.
+export function notify(msg, tipo = "ok") {
+  let cont = document.querySelector(".toast-container");
+  if (!cont) {
+    cont = document.createElement("div");
+    cont.className = "toast-container";
+    document.body.appendChild(cont);
+  }
+  const t = document.createElement("div");
+  t.className = `toast toast-${tipo}`;
+  t.textContent = msg;
+  cont.appendChild(t);
+  requestAnimationFrame(() => t.classList.add("show")); // dispara el fade-in
+  setTimeout(() => {
+    t.classList.remove("show");
+    setTimeout(() => t.remove(), 300); // espera el fade-out antes de quitarlo
+  }, 3500);
+}
+
+// Confirmación con <dialog> nativo. Devuelve una promesa true/false, así que
+// el llamador hace `if (!(await confirmDialog(...))) return;`.
+export function confirmDialog(msg, okLabel = "Aceptar") {
+  return new Promise((resolve) => {
+    const dlg = document.createElement("dialog");
+    dlg.className = "confirm-dialog";
+    dlg.innerHTML =
+      `<p class="confirm-msg"></p>` +
+      `<div class="confirm-actions">` +
+      `<button type="button" class="confirm-cancel">Cancelar</button>` +
+      `<button type="button" class="confirm-ok"></button>` +
+      `</div>`;
+    // textContent (no innerHTML) para que el mensaje/label no inyecten HTML.
+    dlg.querySelector(".confirm-msg").textContent = msg;
+    dlg.querySelector(".confirm-ok").textContent = okLabel;
+    document.body.appendChild(dlg);
+    const cerrar = (valor) => {
+      dlg.close();
+      dlg.remove();
+      resolve(valor);
+    };
+    dlg.querySelector(".confirm-cancel").onclick = () => cerrar(false);
+    dlg.querySelector(".confirm-ok").onclick = () => cerrar(true);
+    dlg.addEventListener("cancel", () => cerrar(false)); // tecla Esc
+    dlg.showModal();
+  });
+}
+
 // Asigna onclick, deshabilita el botón mientras corre (evita doble envío y
 // registros duplicados) y atrapa errores, todo en un solo lugar.
 export const on = (id, fn) => {
@@ -65,7 +117,7 @@ export const on = (id, fn) => {
     try {
       await fn();
     } catch (e) {
-      alert("Error: " + e.message);
+      notify(e.message, "error");
     } finally {
       el.disabled = false;
     }

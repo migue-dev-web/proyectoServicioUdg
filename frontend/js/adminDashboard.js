@@ -1,4 +1,15 @@
-import { api, $, val, esc, on, requireAuth, safeUrl } from "./core.js";
+import {
+  api,
+  $,
+  val,
+  esc,
+  on,
+  requireAuth,
+  safeUrl,
+  notify,
+  confirmDialog,
+  clear,
+} from "./core.js";
 
 requireAuth();
 
@@ -55,15 +66,16 @@ loadDeptos();
 on("fCrear", async () => {
   // El sheet es opcional; nombre, link y departamento no.
   if (!val("fNombre") || !val("fLink") || !val("fDepto"))
-    return alert("Nombre, link y departamento son obligatorios.");
+    return notify("Nombre, link y departamento son obligatorios.", "error");
   const f = await api("/formularios", "POST", {
     nombre: val("fNombre"),
     link: val("fLink"),
     sheet_id: sheetId(val("fSheet")) || null,
     id_departamento: +val("fDepto"),
   });
-  alert(
-    `Éxito: formulario #${f.id} "${f.nombre}" añadido (${f.nombre_departamento}).`,
+  clear("fNombre", "fLink", "fSheet"); // deja el depto seleccionado
+  notify(
+    `Formulario #${f.id} "${f.nombre}" añadido (${f.nombre_departamento}).`,
   );
 });
 
@@ -83,30 +95,33 @@ on("fConsultar", async () => {
 
 on("eGuardar", async () => {
   const id = val("eId");
-  if (!id) return alert("Falta el ID.");
+  if (!id) return notify("Falta el ID.", "error");
   const c = {};
   if (val("eNombre")) c.nombre = val("eNombre");
   if (val("eLink")) c.link = val("eLink");
   if (val("eSheet")) c.sheet_id = sheetId(val("eSheet"));
   if ($("eDepto").value) c.id_departamento = +$("eDepto").value;
   const f = await api(`/formularios/${id}`, "PUT", c);
-  alert(
+  notify(
     `Editado: #${f.id} "${f.nombre}" → ${f.link} (${f.nombre_departamento}).`,
   );
 });
 
 on("xBorrar", async () => {
   const id = val("xId");
-  if (!id || !confirm(`¿Eliminar #${id}?`)) return;
+  if (!id) return notify("Falta el ID.", "error");
+  if (!(await confirmDialog(`¿Eliminar el formulario #${id}?`, "Eliminar")))
+    return;
   await api(`/formularios/${id}`, "DELETE");
-  alert(`Formulario #${id} eliminado.`);
+  clear("xId");
+  notify(`Formulario #${id} eliminado.`);
 });
 
 // ─── RESPUESTAS POR DEPARTAMENTO ───────────────────────────
 
 on("rVer", async () => {
   const id = $("rDepto").value;
-  if (!id) return alert("Selecciona un departamento.");
+  if (!id) return notify("Selecciona un departamento.", "error");
   const abierto = $("rExpandir").checked;
   const out = $("respOut");
   out.classList.remove("resp-placeholder");
@@ -153,23 +168,25 @@ function renderForm(f, abierto) {
 
 on("uCrear", async () => {
   if (!val("uNombre") || !val("uEmail") || !val("uPass"))
-    return alert("Nombre, correo y contraseña son obligatorios.");
+    return notify("Nombre, correo y contraseña son obligatorios.", "error");
   const u = await api("/usuarios/registrar", "POST", {
     nombre: val("uNombre"),
     email: val("uEmail"),
     password: val("uPass"),
     id_departamento: +val("uDepto"),
   });
-  alert(
-    `Éxito: usuario #${u.id} "${u.nombre}" registrado (${u.departamento}).`,
-  );
+  clear("uNombre", "uEmail", "uPass"); // deja el depto seleccionado
+  notify(`Usuario #${u.id} "${u.nombre}" registrado (${u.departamento}).`);
 });
 
 on("uxBorrar", async () => {
   const id = val("uxId");
-  if (!id || !confirm(`¿Eliminar usuario #${id}?`)) return;
+  if (!id) return notify("Falta el ID.", "error");
+  if (!(await confirmDialog(`¿Eliminar el usuario #${id}?`, "Eliminar")))
+    return;
   await api(`/usuarios/${id}`, "DELETE");
-  alert(`Usuario #${id} eliminado.`);
+  clear("uxId");
+  notify(`Usuario #${id} eliminado.`);
 });
 
 on("uConsultar", async () => {
@@ -212,7 +229,7 @@ loadRespUsuario();
 
 on("ruVer", async () => {
   const uid = $("ruUsuario").value;
-  if (!uid) return alert("Selecciona un usuario.");
+  if (!uid) return notify("Selecciona un usuario.", "error");
   const u = usuariosCache.find((x) => String(x.id) === uid);
   const deptoId = deptoIdPorNombre[u.departamento];
   const abierto = $("ruExpandir").checked;
