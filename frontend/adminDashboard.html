@@ -3,7 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Panel de administración: gestión de formularios, usuarios y respuestas."
+    />
     <title>Admin Dashboard</title>
+    <link rel="icon" href="assets/images/udgPlusLogInLogo.jpg" />
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body class="page-admin">
@@ -49,24 +54,45 @@
 
       <section class="card">
         <h2>Insertar formularios a la base de datos</h2>
-        <input id="fNombre" placeholder="Nombre del formulario" />
-        <input id="fLink" placeholder="Link del formulario" />
-        <input id="fSheet" placeholder="Link de Google Sheets relacionado" />
+        <input
+          id="fNombre"
+          placeholder="Nombre del formulario"
+          autocomplete="off"
+        />
+        <input
+          id="fLink"
+          placeholder="Link del formulario"
+          autocomplete="off"
+        />
+        <input
+          id="fSheet"
+          placeholder="Link de Google Sheets relacionado (o solo su ID)"
+          autocomplete="off"
+        />
         <select id="fDepto" class="depto"></select>
         <button id="fCrear">Guardar formulario</button>
         <h2>Editar formulario</h2>
-        <input id="eId" placeholder="ID" />
-        <input id="eNombre" placeholder="Nuevo nombre del formulario" />
-        <input id="eLink" placeholder="Nuevo link del formulario" />
+        <input id="eId" type="text" placeholder="ID" autocomplete="off" />
+        <input
+          id="eNombre"
+          placeholder="Nuevo nombre del formulario"
+          autocomplete="off"
+        />
+        <input
+          id="eLink"
+          placeholder="Nuevo link del formulario"
+          autocomplete="off"
+        />
         <input
           id="eSheet"
           placeholder="Nuevo link de Google Sheets relacionado"
+          autocomplete="off"
         />
         <select id="eDepto" class="depto"></select>
         <button id="eGuardar">Guardar cambios</button>
 
         <h2>Eliminar formulario</h2>
-        <input id="xId" placeholder="ID" />
+        <input id="xId" type="text" placeholder="ID" autocomplete="off" />
         <button id="xBorrar">Eliminar</button>
         <h2>Consultar formularios en la base de datos</h2>
         <button id="fConsultar">Consultar existentes</button>
@@ -74,14 +100,24 @@
 
       <section class="card">
         <h2>Registrar usuario</h2>
-        <input id="uNombre" placeholder="Nombre" />
-        <input id="uEmail" type="email" placeholder="Correo electronico" />
-        <input id="uPass" type="password" placeholder="Contraseña" />
+        <input id="uNombre" placeholder="Nombre" autocomplete="off" />
+        <input
+          id="uEmail"
+          type="email"
+          placeholder="Correo electronico"
+          autocomplete="email"
+        />
+        <input
+          id="uPass"
+          type="password"
+          placeholder="Contraseña"
+          autocomplete="new-password"
+        />
         <select id="uDepto" class="depto-user"></select>
         <button id="uCrear">Registrar usuario</button>
 
         <h2>Eliminar usuario</h2>
-        <input id="uxId" placeholder="ID" />
+        <input id="uxId" type="text" placeholder="ID" autocomplete="off" />
         <button id="uxBorrar">Eliminar usuario</button>
 
         <h2>Consultar usuarios existentes en la base de datos</h2>

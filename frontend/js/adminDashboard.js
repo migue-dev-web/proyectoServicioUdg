@@ -70,6 +70,19 @@ on("fCrear", async () => {
       "Nombre, link, Google Sheets y departamento son obligatorios.",
       "error",
     );
+  // El link debe ser una URL http(s) (safeUrl devuelve "#" si no lo es).
+  if (safeUrl(val("fLink")) === "#")
+    return notify(
+      "El link del formulario debe ser una URL válida (http o https).",
+      "error",
+    );
+  // Aceptamos el enlace completo de Google Sheets O solo el ID (cadena larga
+  // sin espacios ni "/"). sheetId() ya extrae el ID de cualquiera de los dos.
+  const sheet = val("fSheet");
+  const esEnlaceSheets = /docs\.google\.com\/spreadsheets/i.test(sheet);
+  const esIdSuelto = /^[a-zA-Z0-9_-]{20,}$/.test(sheet);
+  if (!esEnlaceSheets && !esIdSuelto)
+    return notify("Pega el enlace de Google Sheets completo o su ID.", "error");
   const f = await api("/formularios", "POST", {
     nombre: val("fNombre"),
     link: val("fLink"),
