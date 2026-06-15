@@ -1,4 +1,4 @@
-import { api, $, val, esc, on, requireAuth } from "./core.js";
+import { api, $, val, esc, on, requireAuth, safeUrl } from "./core.js";
 
 requireAuth();
 
@@ -53,6 +53,9 @@ async function loadDeptos() {
 loadDeptos();
 
 on("fCrear", async () => {
+  // El sheet es opcional; nombre, link y departamento no.
+  if (!val("fNombre") || !val("fLink") || !val("fDepto"))
+    return alert("Nombre, link y departamento son obligatorios.");
   const f = await api("/formularios", "POST", {
     nombre: val("fNombre"),
     link: val("fLink"),
@@ -71,7 +74,7 @@ on("fConsultar", async () => {
     ? fs
         .map(
           (f) =>
-            `<div class="modal-item">ID: ${esc(f.id)}<br>Nombre: ${esc(f.nombre)}<br>Link: <a href="${esc(/^https?:\/\//i.test(f.link) ? f.link : "#")}" target="_blank" rel="noopener">${esc(f.link)}</a><br>Sheet ID: ${esc(f.sheet_id || "—")}<br>Depto: ${esc(f.nombre_departamento)}</div>`,
+            `<div class="modal-item">ID: ${esc(f.id)}<br>Nombre: ${esc(f.nombre)}<br>Link: <a href="${esc(safeUrl(f.link))}" target="_blank" rel="noopener">${esc(f.link)}</a><br>Sheet ID: ${esc(f.sheet_id || "—")}<br>Depto: ${esc(f.nombre_departamento)}</div>`,
         )
         .join("")
     : "No hay formularios.";

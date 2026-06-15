@@ -12,6 +12,11 @@ export const esc = (s) =>
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
   );
 
+// Devuelve la URL solo si es http(s); si no, "#". Evita que un enlace
+// peligroso (p. ej. "javascript:...") guardado en la BD se vuelva clickeable.
+export const safeUrl = (u) =>
+  /^https?:\/\//i.test(String(u)) ? String(u) : "#";
+
 // --- Sesión ---
 export const token = () => localStorage.getItem("token");
 
@@ -51,12 +56,18 @@ export async function api(path, method = "GET", body) {
   return data;
 }
 
-// Asigna onclick y atrapa errores en un solo lugar.
-export const on = (id, fn) =>
-  ($(id).onclick = async () => {
+// Asigna onclick, deshabilita el botón mientras corre (evita doble envío y
+// registros duplicados) y atrapa errores, todo en un solo lugar.
+export const on = (id, fn) => {
+  const el = $(id);
+  el.onclick = async () => {
+    el.disabled = true;
     try {
       await fn();
     } catch (e) {
       alert("Error: " + e.message);
+    } finally {
+      el.disabled = false;
     }
-  });
+  };
+};

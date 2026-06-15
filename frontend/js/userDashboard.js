@@ -1,4 +1,4 @@
-import { api, $, esc, on, requireAuth } from "./core.js";
+import { api, $, esc, on, requireAuth, safeUrl } from "./core.js";
 
 requireAuth();
 
@@ -21,7 +21,7 @@ api("/perfil")
       ? forms
           .map(
             (f) =>
-              `<a class="form-card" href="${esc(f.link)}" target="_blank" rel="noopener">
+              `<a class="form-card" href="${esc(safeUrl(f.link))}" target="_blank" rel="noopener">
                  ${esc(f.nombre)}
                  <span class="dept">${esc(f.nombre_departamento)}</span>
                </a>`,

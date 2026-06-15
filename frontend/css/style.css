@@ -1,5 +1,11 @@
 /* ─── Globals (compartidos entre páginas) ─────────────────── */
 
+/* Botón mientras corre su acción: se ve y se siente inhabilitado. */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Texto solo para lectores de pantalla: accesible pero invisible.
    Lo usan las <label> del login para no romper el diseño con placeholder. */
 .sr-only {
