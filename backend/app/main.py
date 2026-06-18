@@ -134,23 +134,28 @@ def actualizar_usuario(
         raise HTTPException(status_code=403, detail="No autorizado para modificar usuarios")
 
     # 2. Buscar al usuario en la base de datos
-    db_usuario = db.query(models.UsuarioDB).filter(models.UsuarioDB.id == usuario_id).first()
+    db_usuario = db.query(models.UserDB).filter(models.UserDB.id == usuario_id).first()
     if not db_usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
     # 3. Guardar estado anterior para el registro de auditoría
-    datos_anteriores = f"Nombre: {db_usuario.nombre}, Email: {db_usuario.email}, Depto: {db_usuario.departamento}"
+    datos_anteriores = f"Nombre: {db_usuario.nombre}, Email: {db_usuario.email}, Depto: {db_usuario.id_departamento}"
 
     # 4. Actualizar los campos que fueron enviados en la petición
     payload = usuario_data.model_dump(exclude_unset=True) # exclude_unset evita sobreescribir con None lo que no se mandó
     
-    for key, value in payload.items():
-        if key == "password":
+    
+    if "password" in payload:
             # Si se envió una contraseña nueva, la encriptamos antes de guardarla
-            db_usuario.hashed_password = auth.get_password_hash(value)
-        else:
+        nueva_password = payload.pop("password")
+        if nueva_password and nueva_password.strip() != "":
+            # CORRECCIÓN AQUÍ: Cambiado a password_hash para que coincida con tu modelo
+            db_usuario.password_hash = auth.get_password_hash(nueva_password)
+    for key, value in payload.items():
+        if hasattr(db_usuario, key): 
             setattr(db_usuario, key, value)
-
+            
+    db.add(db_usuario)
     db.commit()
     db.refresh(db_usuario)
 
@@ -161,7 +166,7 @@ def actualizar_usuario(
         accion="EDITAR",
         tabla="usuarios",
         registro_id=usuario_id,
-        detalles=f"Antes -> {datos_anteriores} | Ahora -> Nombre: {db_usuario.nombre}, Email: {db_usuario.email}, Depto: {db_usuario.departamento}"
+        detalles=f"Antes -> {datos_anteriores} | Ahora -> Nombre: {db_usuario.nombre}, Email: {db_usuario.email}, Depto: {db_usuario.id_departamento}"
     )
 
     return {"detail": f"Usuario '{db_usuario.nombre}' actualizado con éxito."}
