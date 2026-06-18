@@ -72,7 +72,7 @@
         <select id="fDepto" class="depto"></select>
         <button id="fCrear">Guardar formulario</button>
         <h2>Editar formulario</h2>
-        <input id="eId" type="text" placeholder="ID" autocomplete="off" />
+        <select id="eSelect" class="form-select"></select>
         <input
           id="eNombre"
           placeholder="Nuevo nombre del formulario"
@@ -92,7 +92,7 @@
         <button id="eGuardar">Guardar cambios</button>
 
         <h2>Eliminar formulario</h2>
-        <input id="xId" type="text" placeholder="ID" autocomplete="off" />
+        <select id="xSelect" class="form-select"></select>
         <button id="xBorrar">Eliminar</button>
         <h2>Consultar formularios en la base de datos</h2>
         <button id="fConsultar">Consultar existentes</button>
@@ -116,8 +116,26 @@
         <select id="uDepto" class="depto-user"></select>
         <button id="uCrear">Registrar usuario</button>
 
+        <h2>Editar usuario</h2>
+        <select id="ueSelect" class="user-select"></select>
+        <input id="ueNombre" placeholder="Nuevo nombre" autocomplete="off" />
+        <input
+          id="ueEmail"
+          type="email"
+          placeholder="Nuevo correo electrónico"
+          autocomplete="off"
+        />
+        <input
+          id="uePass"
+          type="password"
+          placeholder="Nueva contraseña (opcional)"
+          autocomplete="new-password"
+        />
+        <select id="ueDepto" class="depto-user"></select>
+        <button id="ueGuardar">Guardar cambios</button>
+
         <h2>Eliminar usuario</h2>
-        <input id="uxId" type="text" placeholder="ID" autocomplete="off" />
+        <select id="uxSelect" class="user-select"></select>
         <button id="uxBorrar">Eliminar usuario</button>
 
         <h2>Consultar usuarios existentes en la base de datos</h2>

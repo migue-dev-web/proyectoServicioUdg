@@ -45,7 +45,7 @@ async function loadDeptos() {
   document.querySelectorAll(".depto").forEach((s) => (s.innerHTML = optsForm));
   $("eDepto").insertAdjacentHTML(
     "afterbegin",
-    `<option value="">— no cambiar —</option>`,
+    `<option value="" selected>— no cambiar —</option>`,
   );
 
   // Select de USUARIOS (.depto-user): SÍ incluimos "admin", porque el
@@ -60,8 +60,26 @@ async function loadDeptos() {
   document
     .querySelectorAll(".depto-user")
     .forEach((s) => (s.innerHTML = optsUser));
+  $("ueDepto").insertAdjacentHTML(
+    "afterbegin",
+    `<option value="" selected>— no cambiar —</option>`,
+  );
 }
 loadDeptos();
+
+async function loadFormSelects() {
+  const fs = await api("/formularios/mis-formularios");
+  const placeholder = `<option value="">— selecciona formulario —</option>`;
+  const opts = fs
+    .map(
+      (f) =>
+        `<option value="${f.id}">#${f.id} · ${esc(f.nombre)} — ${esc(f.nombre_departamento)}</option>`,
+    )
+    .join("");
+  $("eSelect").innerHTML = placeholder + opts;
+  $("xSelect").innerHTML = placeholder + opts;
+}
+loadFormSelects();
 
 on("fCrear", async () => {
   // Todos obligatorios: nombre, link, hoja de Google Sheets y departamento.
@@ -90,6 +108,7 @@ on("fCrear", async () => {
     id_departamento: +val("fDepto"),
   });
   clear("fNombre", "fLink", "fSheet"); // deja el depto seleccionado
+  await loadFormSelects();
   notify(
     `Formulario #${f.id} "${f.nombre}" añadido (${f.nombre_departamento}).`,
   );
@@ -110,29 +129,30 @@ on("fConsultar", async () => {
 });
 
 on("eGuardar", async () => {
-  const id = val("eId");
-  if (!id) return notify("Falta el ID.", "error");
+  const id = $("eSelect").value;
+  if (!id) return notify("Selecciona un formulario.", "error");
   const c = {};
   if (val("eNombre")) c.nombre = val("eNombre");
   if (val("eLink")) c.link = val("eLink");
   if (val("eSheet")) c.sheet_id = sheetId(val("eSheet"));
   if ($("eDepto").value) c.id_departamento = +$("eDepto").value;
   const f = await api(`/formularios/${id}`, "PUT", c);
-  // eDepto vuelve a "— no cambiar —" (su opción con value="").
-  clear("eId", "eNombre", "eLink", "eSheet", "eDepto");
+  clear("eSelect", "eNombre", "eLink", "eSheet", "eDepto");
+  await loadFormSelects();
   notify(
     `Editado: #${f.id} "${f.nombre}" → ${f.link} (${f.nombre_departamento}).`,
   );
 });
 
 on("xBorrar", async () => {
-  const id = val("xId");
-  if (!id) return notify("Falta el ID.", "error");
-  if (!(await confirmDialog(`¿Eliminar el formulario #${id}?`, "Eliminar")))
+  const id = $("xSelect").value;
+  if (!id) return notify("Selecciona un formulario.", "error");
+  const nombre = $("xSelect").options[$("xSelect").selectedIndex].text;
+  if (!(await confirmDialog(`¿Eliminar el formulario "${nombre}"?`, "Eliminar")))
     return;
   await api(`/formularios/${id}`, "DELETE");
-  clear("xId");
-  notify(`Formulario #${id} eliminado.`);
+  await loadFormSelects();
+  notify(`Formulario "${nombre}" eliminado.`);
 });
 
 // ─── RESPUESTAS POR DEPARTAMENTO ───────────────────────────
@@ -184,6 +204,20 @@ function renderForm(f, abierto) {
 
 // ─── USUARIOS ──────────────────────────────────────────────
 
+async function loadUserSelects() {
+  const us = await api("/usuarios");
+  const placeholder = `<option value="">— selecciona usuario —</option>`;
+  const opts = us
+    .map(
+      (u) =>
+        `<option value="${u.id}">#${u.id} · ${esc(u.nombre)} — ${esc(u.email)} — ${esc(u.departamento)}</option>`,
+    )
+    .join("");
+  $("ueSelect").innerHTML = placeholder + opts;
+  $("uxSelect").innerHTML = placeholder + opts;
+}
+loadUserSelects();
+
 on("uCrear", async () => {
   if (!val("uNombre") || !val("uEmail") || !val("uPass"))
     return notify("Nombre, correo y contraseña son obligatorios.", "error");
@@ -198,17 +232,39 @@ on("uCrear", async () => {
     id_departamento: +val("uDepto"),
   });
   clear("uNombre", "uEmail", "uPass"); // deja el depto seleccionado
+  await loadUserSelects();
   notify(`Usuario #${u.id} "${u.nombre}" registrado (${u.departamento}).`);
 });
 
+on("ueGuardar", async () => {
+  const id = $("ueSelect").value;
+  if (!id) return notify("Selecciona un usuario.", "error");
+  const c = {};
+  if (val("ueNombre")) c.nombre = val("ueNombre");
+  if (val("ueEmail")) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val("ueEmail")))
+      return notify("Escribe un correo electrónico válido.", "error");
+    c.email = val("ueEmail");
+  }
+  if (val("uePass")) c.password = val("uePass");
+  if ($("ueDepto").value) c.id_departamento = +$("ueDepto").value;
+  if (!Object.keys(c).length)
+    return notify("No hay cambios para guardar.", "error");
+  const res = await api(`/admin/usuarios/${id}`, "PUT", c);
+  clear("ueSelect", "ueNombre", "ueEmail", "uePass", "ueDepto");
+  await loadUserSelects();
+  notify(res.detail);
+});
+
 on("uxBorrar", async () => {
-  const id = val("uxId");
-  if (!id) return notify("Falta el ID.", "error");
-  if (!(await confirmDialog(`¿Eliminar el usuario #${id}?`, "Eliminar")))
+  const id = $("uxSelect").value;
+  if (!id) return notify("Selecciona un usuario.", "error");
+  const nombre = $("uxSelect").options[$("uxSelect").selectedIndex].text;
+  if (!(await confirmDialog(`¿Eliminar a "${nombre}"?`, "Eliminar")))
     return;
   await api(`/usuarios/${id}`, "DELETE");
-  clear("uxId");
-  notify(`Usuario #${id} eliminado.`);
+  await loadUserSelects();
+  notify(`Usuario "${nombre}" eliminado.`);
 });
 
 on("uConsultar", async () => {
