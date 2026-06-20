@@ -1,9 +1,11 @@
 import { api, $, val, on, esc, notify, confirmDialog, clear } from "../core.js";
 
+let cachedUsers = [];
+
 export async function loadUserSelects() {
-  const us = await api("/usuarios");
+  cachedUsers = await api("/usuarios");
   const placeholder = `<option value="">— selecciona usuario —</option>`;
-  const opts = us
+  const opts = cachedUsers
     .map(
       (u) =>
         `<option value="${u.id}">#${u.id} · ${esc(u.nombre)} — ${esc(u.email)} — ${esc(u.departamento)}</option>`,
@@ -62,10 +64,9 @@ export function initUsuarios() {
   });
 
   on("uConsultar", async () => {
-    const us = await api("/usuarios");
     $("modalTitle").textContent = "Usuarios existentes";
-    $("modalBody").innerHTML = us.length
-      ? us
+    $("modalBody").innerHTML = cachedUsers.length
+      ? cachedUsers
           .map(
             (u) =>
               `<div class="modal-item">ID: ${esc(u.id)}<br>Nombre: ${esc(u.nombre)}<br>Correo: ${esc(u.email)}<br>Depto: ${esc(u.departamento)}</div>`,

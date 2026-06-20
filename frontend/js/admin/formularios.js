@@ -5,10 +5,12 @@ const sheetId = (s) => {
   return m ? m[1] : s.trim();
 };
 
+let cachedForms = [];
+
 export async function loadFormSelects() {
-  const fs = await api("/formularios/mis-formularios");
+  cachedForms = await api("/formularios/mis-formularios");
   const placeholder = `<option value="">— selecciona formulario —</option>`;
-  const opts = fs
+  const opts = cachedForms
     .map(
       (f) =>
         `<option value="${f.id}">#${f.id} · ${esc(f.nombre)} — ${esc(f.nombre_departamento)}</option>`,
@@ -43,10 +45,9 @@ export function initFormularios() {
   });
 
   on("fConsultar", async () => {
-    const fs = await api("/formularios/mis-formularios");
     $("modalTitle").textContent = "Formularios existentes";
-    $("modalBody").innerHTML = fs.length
-      ? fs
+    $("modalBody").innerHTML = cachedForms.length
+      ? cachedForms
           .map(
             (f) =>
               `<div class="modal-item">ID: ${esc(f.id)}<br>Nombre: ${esc(f.nombre)}<br>Link: <a href="${esc(safeUrl(f.link))}" target="_blank" rel="noopener">${esc(f.link)}</a><br>Sheet ID: ${esc(f.sheet_id || "—")}<br>Depto: ${esc(f.nombre_departamento)}</div>`,
