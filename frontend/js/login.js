@@ -33,7 +33,6 @@ form.addEventListener("submit", async (e) => {
 
     // Ya con token guardado, el resto sí usa el helper compartido.
     const perfil = await api("/perfil");
-    localStorage.setItem("departamento", perfil.departamento_tag);
 
     location.href =
       perfil.departamento_tag === "admin"
