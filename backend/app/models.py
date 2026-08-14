@@ -22,6 +22,7 @@ class UserDB(Base):
     password_hash = Column(String)
     is_active = Column(Boolean, default=True)
     id_departamento = Column(Integer, ForeignKey("departamentos.id"))
+    acces = Column(Integer, nullable=True)
     
     depto_rel = relationship("DepartamentoDB", back_populates="usuarios") # Aquí guardamos el tag (admin, ventas, it)
 
@@ -32,6 +33,7 @@ class FormularioDB(Base):
     nombre = Column(String, index=True)
     link = Column(String)
     sheet_id = Column(String, nullable=True)
+    estatus = Column(String, nullable=True)
     # Relación con el departamento
     id_departamento = Column(Integer, ForeignKey("departamentos.id"))
     
