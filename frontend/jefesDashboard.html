@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Consulta los formularios asignados a tu departamento."
+    />
+    <title>Mis formularios</title>
+    <link rel="icon" href="assets/images/udgPlusLogInLogo.jpg" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body class="page-user">
+    <header class="dash-header">
+      <h1>Mis formularios</h1>
+      <div class="user-box">
+        <span class="user-name" id="userName"></span>
+        <button id="logOut">Cerrar sesión</button>
+      </div>
+    </header>
+    <div class="dash-columns">
+      <main id="mainLayout">
+        <div id="forms" class="forms-grid"></div>
+        <div class="form-panel">
+          <div class="form-panel-header">
+            <span id="expandTitle" class="expand-title"></span>
+            <button id="expandClose" aria-label="Cerrar">✕</button>
+          </div>
+          <iframe id="formFrame" src="" frameborder="0"></iframe>
+        </div>
+      </main>
+      <section class="resp-panel">
+        <h2>Respuestas de tu equipo</h2>
+        <div class="resp-controls">
+          <select id="ruUsuario"></select>
+          <button id="ruVer">Ver respuestas</button>
+          <label class="resp-toggle"
+            ><input type="checkbox" id="ruExpandir" /> Mostrar tablas
+            desplegadas</label
+          >
+        </div>
+        <div id="ruOut" class="resp-placeholder">
+          Selecciona un usuario y da "Ver respuestas".
+        </div>
+      </section>
+    </div>
+    <script type="module" src="js/jefesDashboard.js"></script>
+  </body>
+</html>

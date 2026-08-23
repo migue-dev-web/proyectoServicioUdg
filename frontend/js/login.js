@@ -37,7 +37,9 @@ form.addEventListener("submit", async (e) => {
     location.href =
       perfil.departamento_tag === "admin"
         ? "adminDashboard.html"
-        : "subJefeDashboard.html";
+        : perfil.acces === 1
+        ? "jefesDashboard.html"
+        : "subJefesDashboard.html";
   } catch (err) {
     errorMsg.textContent = err.message;
     errorMsg.style.display = "block";
